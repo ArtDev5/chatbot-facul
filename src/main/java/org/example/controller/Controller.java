@@ -1,7 +1,6 @@
 package org.example.controller;
 
-import org.example.messenger.ReceiveEvent;
-import org.example.messenger.ReceiveMessage;
+import org.example.entities.UserInput;
 import org.example.services.BotServices;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +11,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
-@RequestMapping("/webhook")
+@RequestMapping("/bot")
 public class Controller {
 
     @Value("${verifyToken}")
@@ -27,23 +28,8 @@ public class Controller {
         this.bot = bot;
     }
 
-    @GetMapping
-    public ResponseEntity<String> validateWebhookOnFacebook(@RequestParam(value = "hub.verify_token") String token,
-                                                            @RequestParam(value = "hub.challenge") String challenge){
-        if(token.equals(verifyToken)){
-            return ResponseEntity.ok(challenge);
-        }else{
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        }
-    }
-
     @PostMapping
-    public ResponseEntity<String> getAnswer(@RequestBody ReceiveEvent event){
-
-        ReceiveMessage receiveMessage = new ReceiveMessage(event);
-
-        bot.answerUser(receiveMessage, responseUrl);
-
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Map<String, String>> getAnswer(@RequestBody UserInput userInput){
+        return ResponseEntity.ok().body(Map.of("response", bot.answerUser(userInput)));
     }
 }
